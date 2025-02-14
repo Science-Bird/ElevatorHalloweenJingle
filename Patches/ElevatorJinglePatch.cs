@@ -6,21 +6,31 @@ namespace ElevatorHalloweenJingle.Patches
     [HarmonyPatch(typeof(MineshaftElevatorController))]
     public class ElevatorJinglePatch
     {
+        internal static System.Random clipRandom;
+
         [HarmonyPatch("Update")]
         [HarmonyPrefix]
         private static void SetJingleClip(MineshaftElevatorController __instance)
         {
-            if (!__instance.elevatorJingleMusic.isPlaying)
+            if (__instance.playMusic && !__instance.elevatorJingleMusic.isPlaying)
             {
+                int clipIndex = clipRandom.Next(0, __instance.elevatorHalloweenClips.Length);
                 if (__instance.elevatorMovingDown)
                 {
-                    __instance.elevatorJingleMusic.clip = __instance.elevatorHalloweenClips[Random.Range(0, __instance.elevatorHalloweenClips.Length)];
+                    __instance.elevatorJingleMusic.clip = __instance.elevatorHalloweenClips[clipIndex];
                 }
                 else
                 {
-                    __instance.elevatorJingleMusic.clip = __instance.elevatorHalloweenClipsLoop[Random.Range(0, __instance.elevatorHalloweenClipsLoop.Length)];
+                    __instance.elevatorJingleMusic.clip = __instance.elevatorHalloweenClipsLoop[clipIndex];
                 }
             }
+        }
+
+        [HarmonyPatch("OnEnable")]
+        [HarmonyPrefix]
+        private static void SetJingleRandom(MineshaftElevatorController __instance)
+        {
+            clipRandom = new System.Random(StartOfRound.Instance.randomMapSeed);
         }
     }
 }
